@@ -36,6 +36,45 @@ th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
 .inact{color:var(--warn)}.msg{font-size:13px;margin-top:6px}.empty{color:var(--mut);padding:20px;text-align:center}
 .chk{display:flex;align-items:center;gap:6px;font-size:13px}.chk input{width:auto}
 </style>
+<style>
+:root{--bg:#f4f0ff;--card:rgba(255,255,255,.85);--bd:#e3d9ff;--tx:#241a4a;--mut:#6d63a0;--ac:#7c3aed;--ac2:#ec4899;--ac3:#06b6d4;--ok:#16a34a;--bad:#e11d48;--warn:#ea580c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#120c2b;--card:rgba(38,27,82,.75);--bd:#3b2e7a;--tx:#f3efff;--mut:#aaa0dc;--ac:#a78bfa;--ac2:#f472b6;--ac3:#22d3ee;--ok:#4ade80;--bad:#fb7185;--warn:#fdba74}}
+:root[data-theme="dark"]{--bg:#120c2b;--card:rgba(38,27,82,.75);--bd:#3b2e7a;--tx:#f3efff;--mut:#aaa0dc;--ac:#a78bfa;--ac2:#f472b6;--ac3:#22d3ee;--ok:#4ade80;--bad:#fb7185;--warn:#fdba74}
+body{background:radial-gradient(900px 500px at 5% -10%,rgba(124,58,237,.28),transparent 70%),radial-gradient(800px 500px at 100% 0,rgba(236,72,153,.22),transparent 70%),radial-gradient(700px 500px at 50% 110%,rgba(6,182,212,.2),transparent 70%),var(--bg);background-attachment:fixed;min-height:100vh}
+body::before{content:"";position:fixed;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(236,72,153,.3),transparent 70%);top:55%;right:-110px;pointer-events:none;animation:drift 12s ease-in-out infinite alternate}
+.wrap{position:relative}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(-60px,-50px)}}
+@keyframes shine{to{background-position:200% center}}
+@keyframes pulse{0%,100%{box-shadow:0 4px 14px rgba(124,58,237,.35)}50%{box-shadow:0 4px 26px rgba(236,72,153,.6)}}
+h1{font-size:32px;letter-spacing:-.5px;background:linear-gradient(90deg,var(--ac),var(--ac2),var(--ac3),var(--ac));background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+h2{font-size:17px}
+.sub{color:var(--mut)}
+.card,.stat{background:var(--card);border:1px solid var(--bd);border-radius:20px;backdrop-filter:blur(10px);box-shadow:0 8px 28px rgba(90,50,170,.12)}
+.stat{transition:transform .25s,box-shadow .25s;border-top:4px solid var(--ac)}
+.stat:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(90,50,170,.22)}
+.stats .stat:nth-child(2){border-top-color:var(--ac2)}.stats .stat:nth-child(3){border-top-color:var(--ac3)}.stats .stat:nth-child(4){border-top-color:var(--warn)}.stats .stat:nth-child(5){border-top-color:var(--ok)}
+.stat b{font-size:26px}
+nav{gap:8px}
+nav button,.btn{border-radius:99px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;transition:transform .2s,box-shadow .2s,background-position .4s;font-weight:600}
+nav button:hover,.btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 8px 20px rgba(124,58,237,.3)}
+nav button:active,.btn:active{transform:scale(.94)}
+nav button.on,.btn.pri{background:linear-gradient(135deg,var(--ac),var(--ac2),var(--ac3));background-size:200% 200%;color:#fff;border-color:transparent}
+nav button.on:hover,.btn.pri:hover{background-position:100% 50%}
+.btn.pri{animation:pulse 2.4s ease-in-out infinite}
+.btn.sm{border-radius:99px}
+input,select,textarea{border-radius:12px;border:1px solid var(--bd);transition:box-shadow .2s,border-color .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 3px rgba(124,58,237,.25)}
+.tw table{border-collapse:separate;border-spacing:0 7px}
+th{position:static;background:transparent;border-bottom:none;color:var(--ac);font-size:11px;text-transform:uppercase;letter-spacing:.6px;padding:2px 10px;transition:color .2s}
+th:hover{color:var(--ac2)}
+td{background:rgba(124,58,237,.07);border-bottom:none;padding:9px 10px;transition:background .2s}
+tr:hover td{background:rgba(236,72,153,.16)}
+td:first-child{border-radius:14px 0 0 14px;font-weight:700;color:var(--ac)}
+td:last-child{border-radius:0 14px 14px 0}
+td b{display:inline-block;padding:2px 12px;border-radius:99px;color:#fff;background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.tag{border-radius:99px;padding:2px 9px;font-weight:600}
+@media (prefers-reduced-motion:reduce){*,*::before{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
 <div class="wrap">
