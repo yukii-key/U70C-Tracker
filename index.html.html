@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alliance Tracker</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--tx:#1d1b16;--mut:#6b675c;--bd:#ddd8cb;--ac:#9a6b12;--ok:#1f7a45;--bad:#b3261e;--warn:#a86400;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14120e;--card:#1e1b15;--tx:#efeadc;--mut:#a39d8b;--bd:#35302420;--bd:#383226;--ac:#e0b34d;--ok:#5fd08a;--bad:#ff7b72;--warn:#f0b04a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14120e;--card:#1e1b15;--tx:#efeadc;--mut:#a39d8b;--bd:#383226;--ac:#e0b34d;--ok:#5fd08a;--bad:#ff7b72;--warn:#f0b04a;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 2px}h2{font-size:16px;margin:0 0 8px}
+.sub{color:var(--mut);margin:0 0 14px;font-size:13px}
+nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+nav button,.btn{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+nav button.on,.btn.pri{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:600}
+.btn.sm{padding:4px 10px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:20px}.stat span{color:var(--mut);font-size:12px}
+textarea,input,select{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;font:inherit}
+textarea{min-height:140px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin:8px 0}
+.row>div{flex:1;min-width:140px}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:2px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}
+th{cursor:pointer;color:var(--mut);position:sticky;top:0;background:var(--card)}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+.up{color:var(--ok)}.dn{color:var(--bad)}.tag{font-size:11px;padding:1px 6px;border-radius:99px;border:1px solid currentColor}
+.inact{color:var(--warn)}.msg{font-size:13px;margin-top:6px}.empty{color:var(--mut);padding:20px;text-align:center}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px}.chk input{width:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Alliance Tracker</h1>
+<p class="sub">Paste your alliance roster from ROKSTATS (or any scan), save it as a snapshot, then compare snapshots to see growth and inactivity.</p>
+<nav id="nav"></nav>
+<div id="view"></div>
+</div>
+<script>
+var SEED=`233578038|The sky is blin|73|10.51M|163|32.4K|6:01|1.28K
+233556081|ˢᵏVandain|70|11.4M|133|40.5K|11:40|1.03K
+233389876|Kenpachi0|65|9.07M|91|50.1K|21:03|686
+234087244|General Bato|62|10.84M|82|51.7K|16:59|1.74K
+233405598|ᴹᶠL4V1DA|58|13.72M|65|45.9K|21:49|1.7K
+233976813|Infinite Rick|58|23.85M|56|48.1K|22:22|2.72K
+233980323|HLX Lycans|56|10.72M|76|47.3K|16:40|629
+233831665|ᴹᶠDiosa|55|16.48M|36|46.4K|22:53|4.24K
+233677671|Queenflorizel|54|9.2M|70|49.7K|11:30|2.29K
+233890782|Ujang Acay|54|9.48M|68|43.8K|18:36|682
+233831930|ᴹᶠOppy|53|10.06M|54|35K|18:48|3.91K
+233969805|Little Toady|53|10.11M|72|48K|13:37|774
+233728326|ᴹᶠLucian|52|9.36M|52|44.3K|22:24|1.07K
+233931725|ᴹᶠDrgnLily|51|11.96M|43|45.1K|22:51|1.6K
+233837737|PachuliAzteca|49|11.1M|78|44.7K|6:18|1.27K
+233830114|ᴹᶠAimerM|48|9.28M|45|42.9K|22:25|379
+233539218|Кока1707|47|10.72M|65|44.4K|10:13|1.25K
+233831422|Haliburton00|46|8.93M|48|45.9K|16:40|498
+233838929|ᴹᶠDrKOTT|46|8.9M|40|39.8K|22:13|561
+233972773|Małaszka|46|9.77M|67|47.1K|7:22|848
+233992367|CÔ CÔ|46|10.67M|53|42.7K|15:42|795
+233899878|ᵁᶜ鬼Yuki|45|13.64M|30|42.3K|22:41|1.28K
+233419607|ˢᵏ OLIV34|44|12.57M|46|41.7K|15:03|1.42K
+233451715|hartman|43|10.63M|67|53K|0:00|1.16K
+233860966|King Dudu|42|12.04M|47|33K|16:40|777
+233831504|ˢᵏK0BZ|40|10.65M|43|28.9K|16:40|1.4K
+233464841|ᴹᶠAlisterum|38|11.6M|41|43.5K|8:38|1.15K
+233584481|ᴳᵏFrank|38|9.28M|39|44.7K|11:32|215
+233682131|ˢᵏIL tbsji|38|10.08M|56|43.8K|4:17|781
+234122705|Esukanōru|38|11.59M|57|50.7K|0:00|1.07K
+233376760|Avã|37|11.64M|45|54.3K|0:00|1.68K
+233406813|AKASE 08|37|9.78M|87|19.9K|0:00|505
+233832204|ᴳᵏPearDuck|37|10.53M|45|36.5K|11:12|415
+233914185|Vìñçé0218|37|9.27M|43|45K|6:59|1.15K
+233891502|ᴹᶠWachaDoin|36|10.04M|32|45.1K|11:29|455
+233409153|ᴳᵏkeef|35|8.04M|41|37.4K|10:42|229
+233543106|Leonídas|34|16.8M|39|45.4K|2:29|1.64K
+233849072|G A R O U|34|8.98M|23|48.7K|11:06|441
+233373925|ᴳᵏSᵢdₑc|32|9.56M|54|36.6K|0:00|657
+233376689|Ĵëss|31|11.17M|45|40.1K|0:00|1.2K
+233377589|PREDAtor|31|9.93M|34|42.6K|5:33|351
+233867971|K乙én|31|7.75M|32|31.7K|11:06|398
+233934860|Tipsy Panda|31|9.65M|29|44.3K|5:41|890
+234079506|XinggG|31|8.6M|34|41.6K|5:33|632
+233376749|Míŋg|30|11.08M|45|36.7K|0:00|1.21K
+233931702|ᴾᶻ Inven|30|9.23M|26|36.1K|11:06|324
+233947584|Zai phố|30|7.73M|23|50.1K|6:42|307
+233538329|ᴹᶠBatman|29|7.89M|26|44.4K|5:33|548
+233835043|ᴹᶠASTR1D|29|8.27M|32|45K|2:25|499
+233941991|ᵁᶜBombastic|29|10.62M|30|28K|11:06|235
+233573662|LittleDRA|28|8.51M|54|13K|6:33|253
+233663311|ᶠᵂReaper|28|9.11M|27|49.5K|1:48|451
+233924048|AtticusP|28|9.11M|15|40.2K|11:06|511
+233491707|Monkey PN|27|10.45M|16|40.5K|9:39|307
+233829489|Hermann9188|27|10.77M|26|51.4K|0:00|338
+233851160|ᴳᵏKingBojji|27|12.31M|35|40.3K|0:00|635
+233877211|lxxLEOxxl|27|11.69M|32|43.1K|1:30|328
+233518257|ˢᵏDsadaidhau|26|8.12M|26|38.9K|5:16|244
+233851819|ᴸᵀMeLoK|26|9.78M|12|39.5K|10:30|227
+233889515|ᴅᴇᴋᴜシ|26|8.87M|20|28K|11:06|367
+233893511|ˢᵏJOHNMASTER|26|8.36M|40|37.5K|0:00|247
+233963350|ᴹᶠMei|26|10.72M|21|38K|6:49|263
+233537001|VINCITOR WAR|25|8.7M|23|44.7K|0:00|944
+233973777|XˣOozyˣX|24|9.47M|22|34.8K|5:33|295
+233398906|forliii|23|11.93M|15|47.9K|0:00|691
+233829345|HermanJr9188|23|9.44M|18|41K|3:36|235
+233873882|ᴳᵏBenihime|23|8.79M|25|42.3K|0:00|379
+233563967|ᴿᴿAu|22|11.5M|30|21.7K|3:51|776
+233943051|Køðą|22|11.21M|10|40.1K|5:33|363
+233955889|Aidani0|22|11.47M|20|40.3K|0:00|691
+233647378|tuan muda liyu|21|7.6M|25|35.8K|0:00|205
+233722489|DiệuLinh2k|21|8.33M|17|31.8K|5:31|277
+233737460|kazutora 68|21|9.41M|23|36.5K|0:00|531
+233389871|ˢᵏgoodlu|20|9.55M|21|35.6K|1:25|106
+233404526|Karkarych s|20|8.63M|24|28.6K|1:55|251
+233888278|MANAJER KOPDES|19|9.82M|7|45.1K|1:02|516
+233900123|VÕTÒNGĐÁNHV|18|9.92M|16|33.8K|1:31|204
+233382497|ᴸᵍKot|17|11.82M|5|29.9K|0:00|2.28K
+233410078|IOTM|17|9.26M|14|22.2K|5:33|107
+233621045|VegaPulsar|16|10.34M|20|10.2K|6:02|433
+234152329|Syrian24|16|9.58M|2|36.7K|3:55|141
+233830510|ᴹᶠ Amnesia|15|7.62M|2|28.4K|5:33|62
+233543298|龙Subzero彡|14|7.23M|8|28.9K|1:16|140
+233844838|ᴹᶠMayuyu|14|9.12M|0|28.8K|5:33|105
+234133950|ᴳᵏHazu|14|8.6M|13|14.6K|5:33|157
+233549216|Zeus65|13|9.64M|4|35.3K|0:00|118
+233578965|ᴹᶠDOOMBLADE|13|11.93M|0|35.2K|0:00|412
+233700913|亗 Alexey|13|10.97M|17|19K|0:00|303
+233947669|XxMETEHANxX|13|7.51M|4|34.2K|0:00|162
+233975993|ᴹᶠBrad|13|7.91M|7|26.2K|1:30|477
+233493461|ˢᵏKaah|12|9.49M|10|25.9K|0:00|181
+233841866|Bigcrook1109|12|7.89M|10|25.4K|0:00|117
+233583984|HeavyHammer|11|8.38M|2|29.3K|0:00|58
+233851930|Elder Nanna|11|8.55M|4|13.8K|5:33|96
+233517809|Khổng Minh99|10|7.64M|2|9.2K|6:47|470
+233616457|ᵀᴹMarcBasBR|10|8.01M|12|13.5K|0:59|114
+233625527|Яᴜғғ Uri|10|8.48M|13|15K|0:00|211
+233930824|ᴿHopper|9|7.93M|6|20.7K|0:00|67
+233868901|ᴹᶠDarkMagic|8|9.13M|0|22.2K|0:00|92
+233950200|Rgr314|6|8.76M|16|2.3K|0:00|91
+233660626|Auredio|5|10.19M|2|12.5K|0:00|26
+233678093|Ravlozz|5|12.04M|1|13.9K|0:00|92
+233390996|ᴬˢKing231994|4|7.04M|1|7.6K|1:25|105
+233907103|ᴹᶠMisMizzy|4|7.06M|0|9.1K|1:32|46
+233401519|ᴳᵏLacmi|3|8.01M|2|6.6K|0:00|35
+234073274|メMUAHEHEメ|1|8.49M|0|1.4K|0:00|93
+233501084|ᴹᶠThienhehe|0|8.94M|0|0|0:00|0
+233556810|ᴰᴸZeckers|0|11M|0|0|0:00|11
+233568970|MJK ACCOUNT|0|6.59M|0|0|0:00|0
+233881493|ᵒʳᵍ Logan|0|13.12M|0|0|0:00|0
+233883310|ᴹᶠ안담Andam|0|11.89M|0|0|0:00|0
+233901369|ᴳᵏSZAYBA|0|7.04M|0|0|0:00|0
+233933848|YisusCriste|0|6.52M|0|0|0:00|0`;
+var KEY='allianceTracker.v1',S={snaps:[]},tab='data',sort={k:'',d:-1},msg='';
+function load(){try{var r=localStorage.getItem(KEY);if(r)S=JSON.parse(r)}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({snaps:S.snaps.filter(function(s){return!s.shared})}));return true}catch(e){msg='Could not save in this browser. Use Export backup.';return false}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function fmt(n){return n==null?'–':Math.round(n).toLocaleString('en-US')}
+function fd(n){if(n==null||isNaN(n))return'–';return(n>0?'+':'')+Math.round(n).toLocaleString('en-US')}
+function norm(h){return h.toLowerCase().replace(/[^a-z0-9]/g,'')}
+function num(s){s=String(s).replace(/[,\s]/g,'');var m=/^(-?\d+(?:\.\d+)?)([kmb])?$/i.exec(s);if(!m)return null;var v=parseFloat(m[1]),x=(m[2]||'').toLowerCase();return v*(x=='k'?1e3:x=='m'?1e6:x=='b'?1e9:1)}
+function split(l,d){var o=[],c='',q=false;for(var i=0;i<l.length;i++){var ch=l[i];if(ch=='"'){q=!q}else if(ch==d&&!q){o.push(c.trim());c=''}else c+=ch}o.push(c.trim());return o}
+function parse(text){if(/Usefulness Score/.test(text)&&/^\d+%\s*$/m.test(text))return parsePulse(text);if(/Usefulness/.test(text)&&/^\d{1,3}%\s*$/m.test(text))return parsePulse(text);if(/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}$/m.test(text))return parseRok(text);return parse0(text)}
+function parsePulse(text){
+  var L=text.split(/\r?\n/).map(function(x){return x.trim()}).filter(Boolean),rows=[],seen={},
+  n=['Usefulness %','Gifts','Power','Forts destroyed','Tech points','Building min','Helps','Gift score'],
+  re=/^([\d.,]+[KMB]?)\s+(\d+)\s+([\d.,]+[KMB]?)\s+(\d+)h\s*(\d+)m\s+([\d.,]+[KMB]?)\s+(\d+)$/i;
+  for(var i=2;i<L.length-2;i++){
+    if(!/^\d{1,3}%$/.test(L[i]))continue;
+    var id=L[i-1];if(!/^\d{6,}$/.test(id)||seen[id])continue;
+    var q=re.exec(L[i+2]);if(!q)continue;
+    seen[id]=1;var o={};
+    o[n[0]]=parseInt(L[i]);o[n[1]]=num(L[i+1]);o[n[2]]=num(q[1]);o[n[3]]=+q[2];o[n[4]]=num(q[3]);o[n[5]]=+q[4]*60+ +q[5];o[n[6]]=num(q[6]);o[n[7]]=+q[7];
+    rows.push({id:id,name:L[i-2],m:o})}
+  if(!rows.length)throw new Error('Could not read the Alliance pulse paste.');
+  return{cols:n,rows:rows};
+}
+function parsePulse(text){
+  var L=text.split(/\r?\n/).map(function(x){return x.trim()}).filter(Boolean),sr=/^([\d.,]+[KMB]?)\s+(\d+)\s+([\d.,]+[KMB]?)\s+(\d+)h\s+(\d+)m\s+([\d.,]+[KMB]?)\s+([\d.,]+[KMB]?)$/i;
+  var n=['Usefulness %','Gifts','Power','Forts destroyed','Tech points','Building time (h)','Alliance helps','Gift score'],rows=[],seen={};
+  for(var i=2;i<L.length-2;i++){var p=/^(\d+)%$/.exec(L[i]);if(!p)continue;
+    var id=L[i-1].replace(/\s/g,'');if(!/^\d{6,}$/.test(id)||seen[id])continue;
+    var s=sr.exec(L[i+2]);if(!s)continue;seen[id]=1;
+    var o={};o[n[0]]=+p[1];o[n[1]]=num(L[i+1]);o[n[2]]=num(s[1]);o[n[3]]=+s[2];o[n[4]]=num(s[3]);o[n[5]]=+s[4]+(+s[5])/60;o[n[6]]=num(s[6]);o[n[7]]=num(s[7]);
+    rows.push({id:id,name:L[i-2],m:o})}
+  if(!rows.length)throw new Error('Could not read the Alliance pulse paste. Paste the full member ranking table.');
+  return{cols:n,rows:rows};
+}
+function parseRok(text){
+  var L=text.split(/\r?\n/).map(function(x){return x.trim()}).filter(Boolean),dr=/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}:\d{2}:\d{2})$/,rk=/^(?:\[(.*)\]\([^)]*\))?(R[1-5]|Leader)$/;
+  var cn=(document.getElementById('cn').value||'').split(',').map(function(x){return x.trim()});
+  var n=[cn[0]||'Power',cn[1]||'Stat 2',cn[2]||'Helps',cn[3]||'MS'],rows=[];
+  for(var i=4;i<L.length;i++){var m=dr.exec(L[i]);if(!m)continue;
+    var id=L[i-3];if(!/^\d{6,}$/.test(id))continue;
+    var name=null,rank=null;
+    for(var k=i-4;k>=Math.max(1,i-6);k--){var q=rk.exec(L[k]);if(q){rank=q[2];name=q[1]||L[k-1];break}}
+    if(!name)continue;
+    var hp=/^([\d.,]+[KMB]?) helps$/i.exec(L[i+1]||''),ms=/^([\d.,]+[KMB]?) MS$/i.exec(L[i+2]||''),o={};
+    o[n[0]]=num(L[i-2]);o[n[1]]=num(L[i-1]);o[n[2]]=hp?num(hp[1]):0;o[n[3]]=ms?num(ms[1]):null;
+    rows.push({id:id,name:name,rank:rank,last:m[3]+'-'+m[2]+'-'+m[1]+'T'+m[4],m:o})}
+  if(!rows.length)throw new Error('Could not read the ROKSTATS paste.');
+  return{cols:n,rows:rows};
+}
+function parse0(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});
+  if(lines.length<2)throw new Error('Need a header row and at least one member row.');
+  var d=lines[0].indexOf('\t')>=0?'\t':((lines[0].match(/;/g)||[]).length>(lines[0].match(/,/g)||[]).length?';':',');
+  var H=split(lines[0],d),idK=['id','governorid','govid','uid','playerid'],nmK=['name','governor','governorname','nick','nickname','player','playername'];
+  var ii=-1,ni=-1;H.forEach(function(h,i){var n=norm(h);if(ii<0&&idK.indexOf(n)>=0)ii=i;if(ni<0&&nmK.indexOf(n)>=0)ni=i});
+  if(ni<0&&ii<0)throw new Error('No Name or ID column found in the header row.');
+  var rows=lines.slice(1).map(function(l){return split(l,d)});
+  var cols=[];H.forEach(function(h,i){if(i==ii||i==ni||!h)return;var ok=rows.filter(function(r){return r[i]!==''&&r[i]!=null}).length>0&&rows.every(function(r){return r[i]===''||r[i]==null||num(r[i])!==null});if(ok)cols.push({i:i,n:h})});
+  if(!cols.length)throw new Error('No numeric columns (Power, Kill Points, Deaths…) found.');
+  return{cols:cols.map(function(c){return c.n}),rows:rows.map(function(r){var m={};cols.forEach(function(c){m[c.n]=num(r[c.i])});return{id:ii>=0?r[ii]:'',name:ni>=0?r[ni]:r[ii],m:m}})};
+}
+function rkey(r){return r.id?'i'+r.id:'n'+r.name.toLowerCase()}
+function snapLabel(s,i){return s.date+(s.label?' – '+s.label:'')}
+function sortedSnaps(){return S.snaps.map(function(s,i){s._i=i;return s}).sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a._i-b._i})}
+function render(){
+  var n=document.getElementById('nav');
+  n.innerHTML=[['changes','Changes'],['roster','Roster'],['data','Data']].map(function(t){return'<button data-t="'+t[0]+'" class="'+(tab==t[0]?'on':'')+'">'+t[1]+'</button>'}).join('');
+  n.onclick=function(e){var t=e.target.getAttribute('data-t');if(t){tab=t;msg='';sort={k:'',d:-1};render()}};
+  var v=document.getElementById('view');
+  if(tab=='data')v.innerHTML=dataView();else if(!S.snaps.length)v.innerHTML='<div class="card empty">No snapshots yet. Add one in the Data tab.</div>';
+  else v.innerHTML=tab=='roster'?rosterView():changesView();
+  bind();
+}
+function dataView(){
+  var ss=sortedSnaps();
+  var list=ss.length?'<div class="tw"><table><tr><th>Date</th><th>Label</th><th>Members</th><th></th></tr>'+ss.map(function(s){return'<tr><td>'+esc(s.date)+'</td><td>'+esc(s.label||'')+'</td><td>'+s.rows.length+'</td><td>'+(s.shared?'<span class="tag">Shared</span>':'<button class="btn sm" data-del="'+s._i+'">Delete</button>')+'</td></tr>'}).join('')+'</table></div>':'<p class="sub">No snapshots saved yet.</p>';
+  return'<div class="card"><h2>Add a snapshot</h2><p class="sub">First row must be headers, including a Name or ID column. Every other numeric column (Power, Kill Points, Deaths, T4/T5 kills…) is tracked automatically. Tab, comma or semicolon separated.</p>'+
+  '<textarea id="paste" placeholder="Governor ID,Name,Power,Kill Points,Deaths\n1234567,Haziq,52,000,000,310,000,000,1,200,000"></textarea>'+
+  '<div class="row"><div><label>Scan date</label><input type="date" id="date" value="'+new Date().toISOString().slice(0,10)+'"></div><div><label>Label (optional)</label><input id="label" placeholder="e.g. KvK day 3"></div><div><label>ROKSTATS paste: column names (Power, 2nd number, Helps, MS)</label><input id="cn" value="Power,Stat 2,Helps,Tech points"></div><div style="flex:0"><button class="btn pri" id="add">Save snapshot</button></div><div style="flex:0"><button class="btn" id="seed">Load Nov 20 alliance data</button></div></div><div class="msg" id="msg">'+esc(msg)+'</div></div>'+
+  '<div class="card"><h2>Saved snapshots</h2>'+list+'</div>'+
+  '<div class="card"><h2>Backup</h2><p class="sub">Snapshots you save here stay in this browser. To share them with everyone, export data.json and upload it to your GitHub repository, replacing the old data.json. Anyone who opens the site then sees those snapshots automatically.</p><div class="row"><div style="flex:0"><button class="btn" id="exp">Export data.json</button></div><div><input type="file" id="imp" accept=".json"></div></div></div>';
+}
+function snapSel(id,def){return'<select id="'+id+'">'+sortedSnaps().map(function(s){return'<option value="'+s._i+'"'+(s._i==def?' selected':'')+'>'+esc(snapLabel(s))+'</option>'}).join('')+'</select>'}
+function table(cols,rows,head,body){return'<div class="tw"><table><tr>'+head+'</tr>'+body+'</table></div>'}
+function rosterView(){
+  var ss=sortedSnaps(),cur=window._rs!=null&&S.snaps[window._rs]?window._rs:ss[ss.length-1]._i,s=S.snaps[cur],cols=s.cols,has=s.rows.some(function(r){return r.last}),ref=0;
+  s.rows.forEach(function(r){if(r.last){var t=Date.parse(r.last+'Z');if(t>ref)ref=t}});
+  var th=window._it!=null?window._it:2,only=!!window._io;
+  var fk='Forts destroyed',bk='Building time (h)',hasSc=cols.indexOf(fk)>=0&&cols.indexOf(bk)>=0,fw=window._fw!=null?window._fw:50,mF=1,mB=1;
+  if(hasSc)s.rows.forEach(function(r){mF=Math.max(mF,r.m[fk]||0);mB=Math.max(mB,r.m[bk]||0)});
+  var rows=s.rows.map(function(r){var t=r.last?Date.parse(r.last+'Z'):null;return{r:r,idle:t?(ref-t)/864e5:null,sc:hasSc?100*(fw/100*(r.m[fk]||0)/mF+(1-fw/100)*(r.m[bk]||0)/mB):null}});
+  var isIdle=function(x){return x.idle!=null&&x.idle>=th},idleN=rows.filter(isIdle).length;
+  if(only)rows=rows.filter(isIdle);
+  if(!sort.k)sort={k:hasSc?'sc':cols[0],d:-1};
+  rows.sort(function(a,b){var g=function(x){return sort.k=='sc'?x.sc:sort.k=='name'?x.r.name.toLowerCase():sort.k=='rk'?(x.r.rank||''):sort.k=='idle'?(x.idle==null?-1:x.idle):(x.r.m[sort.k]||0)};var p=g(a),q=g(b);return(p<q?-1:p>q?1:0)*sort.d});
+  var tot={};cols.forEach(function(c){tot[c]=s.rows.reduce(function(a,r){return a+(r.m[c]||0)},0)});
+  var ar=function(k){return sort.k==k?(sort.d<0?' ▾':' ▴'):''};
+  var stats='<div class="stats"><div class="stat"><b>'+s.rows.length+'</b><span>Members</span></div>'+cols.slice(0,2).map(function(c){return'<div class="stat"><b>'+fmt(tot[c])+'</b><span>Total '+esc(c)+'</span></div>'}).join('')+(has?'<div class="stat"><b class="'+(idleN?'inact':'')+'">'+idleN+'</b><span>Idle ≥ '+th+' d</span></div>':'')+'</div>';
+  var head='<th data-s="rank">#</th><th data-s="name">Name'+ar('name')+'</th>'+(hasSc?'<th data-s="sc">Forts + Build score'+ar('sc')+'</th>':'')+(has?'<th data-s="rk">Rank'+ar('rk')+'</th>':'')+cols.map(function(c){return'<th data-s="'+esc(c)+'">'+esc(c)+ar(c)+'</th>'}).join('')+(has?'<th data-s="idle">Last active'+ar('idle')+'</th><th data-s="idle">Idle</th>':'');
+  var body=rows.map(function(x,i){var r=x.r,id=isIdle(x);return'<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td>'+(hasSc?'<td><b>'+x.sc.toFixed(1)+'</b></td>':'')+(has?'<td>'+esc(r.rank||'')+'</td>':'')+cols.map(function(c){return'<td>'+fmt(r.m[c])+'</td>'}).join('')+(has?'<td>'+(r.last?r.last.slice(0,16).replace('T',' '):'–')+'</td><td class="'+(id?'inact':'')+'">'+(x.idle==null?'–':x.idle<1?Math.round(x.idle*24)+' h':x.idle.toFixed(1)+' d')+'</td>':'')+'</tr>'}).join('');
+  var ctl='<div class="row"><div><label>Snapshot</label>'+snapSel('rs',cur)+'</div>'+(hasSc?'<div><label>Forts weight % (rest = build time)</label><input type="number" id="fw" value="'+fw+'" min="0" max="100" step="5"></div>':'')+(has?'<div><label>Flag as idle after (days)</label><input type="number" id="it" value="'+th+'" min="0" step="0.5"></div><div class="chk" style="flex:0;white-space:nowrap"><input type="checkbox" id="io"'+(only?' checked':'')+'><label style="margin:0">Only idle</label></div>':'')+'</div>';
+  return ctl+stats+'<div class="card">'+table(cols,rows,head,body)+'</div>';
+}
+function rosterViewOld(){
+  var ss=sortedSnaps(),cur=window._rs!=null&&S.snaps[window._rs]?window._rs:ss[ss.length-1]._i,s=S.snaps[cur],cols=s.cols;
+  var rows=s.rows.slice();if(!sort.k)sort={k:cols[0],d:-1};
+  rows.sort(function(a,b){var x=sort.k=='name'?a.name.toLowerCase():a.m[sort.k]||0,y=sort.k=='name'?b.name.toLowerCase():b.m[sort.k]||0;return(x<y?-1:x>y?1:0)*sort.d});
+  var tot={};cols.forEach(function(c){tot[c]=rows.reduce(function(a,r){return a+(r.m[c]||0)},0)});
+  var stats='<div class="stats"><div class="stat"><b>'+rows.length+'</b><span>Members</span></div>'+cols.slice(0,3).map(function(c){return'<div class="stat"><b>'+fmt(tot[c])+'</b><span>Total '+esc(c)+'</span></div>'}).join('')+'</div>';
+  var head='<th data-s="rank">#</th><th data-s="name">Name</th>'+cols.map(function(c){return'<th data-s="'+esc(c)+'">'+esc(c)+(sort.k==c?(sort.d<0?' ▾':' ▴'):'')+'</th>'}).join('');
+  var body=rows.map(function(r,i){return'<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td>'+cols.map(function(c){return'<td>'+fmt(r.m[c])+'</td>'}).join('')+'</tr>'}).join('');
+  return'<div class="row"><div><label>Snapshot</label>'+snapSel('rs',cur)+'</div></div>'+stats+'<div class="card">'+table(cols,rows,head,body)+'</div>';
+}
+function changesView(){
+  var ss=sortedSnaps();
+  if(ss.length<2)return'<div class="card empty">Save at least two snapshots to see changes and inactivity.</div>';
+  var bi=window._cb!=null&&S.snaps[window._cb]?window._cb:ss[ss.length-1]._i,ai=window._ca!=null&&S.snaps[window._ca]?window._ca:ss[ss.length-2]._i;
+  var A=S.snaps[ai],B=S.snaps[bi],cols=B.cols.filter(function(c){return A.cols.indexOf(c)>=0});
+  var am=window._am&&cols.indexOf(window._am)>=0?window._am:cols[0],th=window._th!=null?window._th:1,only=!!window._oi;
+  var map={};A.rows.forEach(function(r){map[rkey(r)]=r});
+  var seen={},data=B.rows.map(function(r){var o=map[rkey(r)];seen[rkey(r)]=1;var d={};cols.forEach(function(c){d[c]=o&&o.m[c]!=null&&r.m[c]!=null?r.m[c]-o.m[c]:null});return{r:r,isNew:!o,d:d,inact:!!o&&(d[am]==null||d[am]<th)}});
+  var left=A.rows.filter(function(r){return!seen[rkey(r)]});
+  var inactN=data.filter(function(x){return x.inact}).length,gain={};
+  cols.forEach(function(c){gain[c]=data.reduce(function(a,x){return a+(x.d[c]||0)},0)});
+  if(only)data=data.filter(function(x){return x.inact});
+  if(!sort.k)sort={k:am,d:-1};
+  data.sort(function(a,b){var x=sort.k=='name'?a.r.name.toLowerCase():(a.d[sort.k]==null?-Infinity:a.d[sort.k]),y=sort.k=='name'?b.r.name.toLowerCase():(b.d[sort.k]==null?-Infinity:b.d[sort.k]);return(x<y?-1:x>y?1:0)*sort.d});
+  var days=Math.round((new Date(B.date)-new Date(A.date))/864e5);
+  var stats='<div class="stats"><div class="stat"><b>'+days+' d</b><span>Between snapshots</span></div><div class="stat"><b class="'+(inactN?'inact':'')+'">'+inactN+'</b><span>Inactive ('+esc(am)+' gain &lt; '+fmt(th)+')</span></div><div class="stat"><b>'+data.filter(function(x){return x.isNew}).length+' / '+left.length+'</b><span>Joined / left</span></div>'+cols.slice(0,2).map(function(c){return'<div class="stat"><b class="'+(gain[c]>=0?'up':'dn')+'">'+fd(gain[c])+'</b><span>Alliance '+esc(c)+' change</span></div>'}).join('')+'</div>';
+  var head='<th data-s="name">Name</th><th>Status</th>'+cols.map(function(c){return'<th data-s="'+esc(c)+'">Δ '+esc(c)+(sort.k==c?(sort.d<0?' ▾':' ▴'):'')+'</th>'}).join('');
+  var body=data.map(function(x){var st=x.isNew?'<span class="tag up">New</span>':x.inact?'<span class="tag inact">Inactive</span>':'';return'<tr><td>'+esc(x.r.name)+'</td><td>'+st+'</td>'+cols.map(function(c){var v=x.d[c];return'<td class="'+(v>0?'up':v<0?'dn':'')+'">'+(x.isNew?'–':fd(v))+'</td>'}).join('')+'</tr>'}).join('');
+  var lt=left.length?'<div class="card"><h2>Left the alliance</h2><p class="sub">'+left.map(function(r){return esc(r.name)}).join(', ')+'</p></div>':'';
+  return'<div class="row"><div><label>From (older)</label>'+snapSel('ca',ai)+'</div><div><label>To (newer)</label>'+snapSel('cb',bi)+'</div><div><label>Activity measured by</label><select id="am">'+cols.map(function(c){return'<option'+(c==am?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div><div><label>Minimum gain to count as active</label><input type="number" id="th" value="'+th+'" min="0"></div><div class="chk" style="flex:0;white-space:nowrap"><input type="checkbox" id="oi"'+(only?' checked':'')+'><label style="margin:0">Only inactive</label></div></div>'+stats+'<div class="card">'+table(cols,data,head,body)+(data.length?'':'<div class="empty">Nobody matches.</div>')+'</div>'+lt;
+}
+function bind(){
+  var $=function(i){return document.getElementById(i)};
+  document.querySelectorAll('th[data-s]').forEach(function(h){h.onclick=function(){var k=h.getAttribute('data-s');if(k=='rank')return;sort={k:k,d:sort.k==k?-sort.d:(k=='name'?1:-1)};render()}});
+  if($('rs'))$('rs').onchange=function(){window._rs=+this.value;sort={k:'',d:-1};render()};
+  if($('ca')){$('ca').onchange=function(){window._ca=+this.value;render()};$('cb').onchange=function(){window._cb=+this.value;render()};$('am').onchange=function(){window._am=this.value;sort={k:'',d:-1};render()};$('th').onchange=function(){window._th=Math.max(0,+this.value||0);render()};$('oi').onchange=function(){window._oi=this.checked;render()}}
+  if($('fw'))$('fw').onchange=function(){window._fw=Math.min(100,Math.max(0,+this.value||0));render()};
+  if($('seed'))$('seed').onclick=function(){
+    var n=['Usefulness %','Gifts','Power','Forts destroyed','Tech points','Building time (h)','Alliance helps','Gift score'];
+    if(S.snaps.some(function(s){return s.label=='Nov 20 pulse'})){msg='The Nov 20 data is already loaded.';render();return}
+    var rows=SEED.split('\n').map(function(l){var p=l.split('|'),t=p[6].split(':'),o={};o[n[0]]=+p[2];o[n[1]]=0;o[n[2]]=num(p[3]);o[n[3]]=+p[4];o[n[4]]=num(p[5]);o[n[5]]=+t[0]+(+t[1])/60;o[n[6]]=num(p[7]);o[n[7]]=0;return{id:p[0],name:p[1],m:o}});
+    S.snaps.push({date:'2026-11-20',label:'Nov 20 pulse',cols:n,rows:rows});
+    if(save())msg='Loaded '+rows.length+' members from the Nov 20 Alliance pulse.';
+    window._ca=window._cb=window._rs=null;render()};
+  if($('it')){$('it').onchange=function(){window._it=Math.max(0,+this.value||0);render()};$('io').onchange=function(){window._io=this.checked;render()}}
+  if($('add'))$('add').onclick=function(){
+    try{var p=parse($('paste').value),d=$('date').value;if(!d)throw new Error('Pick a scan date.');
+      S.snaps.push({date:d,label:$('label').value.trim(),cols:p.cols,rows:p.rows});
+      if(save()){msg='Saved '+p.rows.length+' members with '+p.cols.length+' tracked columns ('+p.cols.join(', ')+').';window._ca=window._cb=window._rs=null}
+    }catch(e){msg=e.message}
+    render()};
+  document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){if(confirm('Delete this snapshot?')){S.snaps.splice(+b.getAttribute('data-del'),1);window._ca=window._cb=window._rs=null;save();render()}}});
+  if($('exp'))$('exp').onclick=function(){var a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({snaps:S.snaps.map(function(s){var c=Object.assign({},s);delete c.shared;delete c._i;return c})}));a.download='data.json';a.click()};
+  if($('imp'))$('imp').onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o.snaps)throw 0;S=o;save();msg='Backup restored.';render()}catch(e){msg='That file is not a valid backup.';render()}};r.readAsText(f)};
+}
+function loadShared(){try{fetch('data.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(o){
+  if(!o||!o.snaps||!o.snaps.length)return;
+  var k=function(s){return s.date+'|'+(s.label||'')},have={};
+  o.snaps.forEach(function(s){s.shared=1;have[k(s)]=1});
+  S.snaps=o.snaps.concat(S.snaps.filter(function(s){return!s.shared&&!have[k(s)]}));
+  window._ca=window._cb=window._rs=null;if(tab=='data')tab=S.snaps.length>1?'changes':'roster';render()}).catch(function(){})}catch(e){}}
+load();if(S.snaps.length)tab='changes';render();loadShared();
+</script>
+</body>
+</html>
