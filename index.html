@@ -239,14 +239,14 @@ function dataView(){
   '<textarea id="paste" placeholder="Governor ID,Name,Power,Kill Points,Deaths\n1234567,Haziq,52,000,000,310,000,000,1,200,000"></textarea>'+
   '<div class="row"><div><label>Scan date</label><input type="date" id="date" value="'+new Date().toISOString().slice(0,10)+'"></div><div><label>Label (optional)</label><input id="label" placeholder="e.g. KvK day 3"></div><div><label>ROKSTATS paste: column names (Power, 2nd number, Helps, MS)</label><input id="cn" value="Power,Stat 2,Helps,Tech points"></div><div style="flex:0"><button class="btn pri" id="add">Save snapshot</button></div><div style="flex:0"><button class="btn" id="seed">Load Nov 20 alliance data</button></div></div><div class="msg" id="msg">'+esc(msg)+'</div></div>'+
   '<div class="card"><h2>Saved snapshots</h2>'+list+'</div>'+
-  '<div class="card"><h2>Backup</h2><p class="sub">Snapshots you save here stay in this browser. To share them with everyone, export data.json and upload it to your GitHub repository, replacing the old data.json. Anyone who opens the site then sees those snapshots automatically.</p><div class="row"><div style="flex:0"><button class="btn" id="exp">Export data.json</button></div><div><input type="file" id="imp" accept=".json"></div></div></div>';
+  '<div class="card"><h2>Backup</h2><p class="sub">Snapshots you save here stay in this browser. To share them with everyone, export data.json and upload it to your GitHub repository, replacing the old data.json. Anyone who opens the site then sees those snapshots automatically.</p><div class="row"><div style="flex:0"><button class="btn" id="exp">Export data.json</button></div><div><input type="file" id="imp" accept=".json"></div></div>'+(window._json?'<textarea id="jo" readonly style="min-height:100px">'+esc(window._json)+'</textarea><div class="row"><div style="flex:0"><button class="btn" id="cp">Copy to clipboard</button></div></div>':'')+'</div>';
 }
 function snapSel(id,def){return'<select id="'+id+'">'+sortedSnaps().map(function(s){return'<option value="'+s._i+'"'+(s._i==def?' selected':'')+'>'+esc(snapLabel(s))+'</option>'}).join('')+'</select>'}
 function table(cols,rows,head,body){return'<div class="tw"><table><tr>'+head+'</tr>'+body+'</table></div>'}
 function rosterView(){
   var ss=sortedSnaps(),cur=window._rs!=null&&S.snaps[window._rs]?window._rs:ss[ss.length-1]._i,s=S.snaps[cur],cols=s.cols,has=s.rows.some(function(r){return r.last}),ref=0;
   s.rows.forEach(function(r){if(r.last){var t=Date.parse(r.last+'Z');if(t>ref)ref=t}});
-  var th=window._it!=null?window._it:2,only=!!window._io;
+  var th=window._it!=null?window._it:2,only=!!window._io,qq=(window._q||'').toLowerCase().trim();
   var fk='Forts destroyed',bk='Building time (h)',hasSc=cols.indexOf(fk)>=0&&cols.indexOf(bk)>=0,fw=window._fw!=null?window._fw:50,mF=1,mB=1;
   if(hasSc)s.rows.forEach(function(r){mF=Math.max(mF,r.m[fk]||0);mB=Math.max(mB,r.m[bk]||0)});
   var rows=s.rows.map(function(r){var t=r.last?Date.parse(r.last+'Z'):null;return{r:r,idle:t?(ref-t)/864e5:null,sc:hasSc?100*(fw/100*(r.m[fk]||0)/mF+(1-fw/100)*(r.m[bk]||0)/mB):null}});
@@ -258,8 +258,8 @@ function rosterView(){
   var ar=function(k){return sort.k==k?(sort.d<0?' ▾':' ▴'):''};
   var stats='<div class="stats"><div class="stat"><b>'+s.rows.length+'</b><span>Members</span></div>'+cols.slice(0,2).map(function(c){return'<div class="stat"><b>'+fmt(tot[c])+'</b><span>Total '+esc(c)+'</span></div>'}).join('')+(has?'<div class="stat"><b class="'+(idleN?'inact':'')+'">'+idleN+'</b><span>Idle ≥ '+th+' d</span></div>':'')+'</div>';
   var head='<th data-s="rank">#</th><th data-s="name">Name'+ar('name')+'</th>'+(hasSc?'<th data-s="sc">Forts + Build score'+ar('sc')+'</th>':'')+(has?'<th data-s="rk">Rank'+ar('rk')+'</th>':'')+cols.map(function(c){return'<th data-s="'+esc(c)+'">'+esc(c)+ar(c)+'</th>'}).join('')+(has?'<th data-s="idle">Last active'+ar('idle')+'</th><th data-s="idle">Idle</th>':'');
-  var body=rows.map(function(x,i){var r=x.r,id=isIdle(x);return'<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td>'+(hasSc?'<td><b>'+x.sc.toFixed(1)+'</b></td>':'')+(has?'<td>'+esc(r.rank||'')+'</td>':'')+cols.map(function(c){return'<td>'+fmt(r.m[c])+'</td>'}).join('')+(has?'<td>'+(r.last?r.last.slice(0,16).replace('T',' '):'–')+'</td><td class="'+(id?'inact':'')+'">'+(x.idle==null?'–':x.idle<1?Math.round(x.idle*24)+' h':x.idle.toFixed(1)+' d')+'</td>':'')+'</tr>'}).join('');
-  var ctl='<div class="row"><div><label>Snapshot</label>'+snapSel('rs',cur)+'</div>'+(hasSc?'<div><label>Forts weight % (rest = build time)</label><input type="number" id="fw" value="'+fw+'" min="0" max="100" step="5"></div>':'')+(has?'<div><label>Flag as idle after (days)</label><input type="number" id="it" value="'+th+'" min="0" step="0.5"></div><div class="chk" style="flex:0;white-space:nowrap"><input type="checkbox" id="io"'+(only?' checked':'')+'><label style="margin:0">Only idle</label></div>':'')+'</div>';
+  var body=rows.map(function(x,i){var r=x.r,id=isIdle(x);if(qq&&r.name.toLowerCase().indexOf(qq)<0&&String(r.id).indexOf(qq)<0)return'';return'<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td>'+(hasSc?'<td><b>'+x.sc.toFixed(1)+'</b></td>':'')+(has?'<td>'+esc(r.rank||'')+'</td>':'')+cols.map(function(c){return'<td>'+fmt(r.m[c])+'</td>'}).join('')+(has?'<td>'+(r.last?r.last.slice(0,16).replace('T',' '):'–')+'</td><td class="'+(id?'inact':'')+'">'+(x.idle==null?'–':x.idle<1?Math.round(x.idle*24)+' h':x.idle.toFixed(1)+' d')+'</td>':'')+'</tr>'}).join('');
+  var ctl='<div class="row"><div><label>Snapshot</label>'+snapSel('rs',cur)+'</div><div><label>Search name or ID</label><input id="q" value="'+esc(window._q||'')+'" placeholder="Type a name or governor ID"></div>'+(hasSc?'<div><label>Forts weight % (rest = build time)</label><input type="number" id="fw" value="'+fw+'" min="0" max="100" step="5"></div>':'')+(has?'<div><label>Flag as idle after (days)</label><input type="number" id="it" value="'+th+'" min="0" step="0.5"></div><div class="chk" style="flex:0;white-space:nowrap"><input type="checkbox" id="io"'+(only?' checked':'')+'><label style="margin:0">Only idle</label></div>':'')+'</div>';
   return ctl+stats+'<div class="card">'+table(cols,rows,head,body)+'</div>';
 }
 function rosterViewOld(){
@@ -286,18 +286,20 @@ function changesView(){
   if(only)data=data.filter(function(x){return x.inact});
   if(!sort.k)sort={k:am,d:-1};
   data.sort(function(a,b){var x=sort.k=='name'?a.r.name.toLowerCase():(a.d[sort.k]==null?-Infinity:a.d[sort.k]),y=sort.k=='name'?b.r.name.toLowerCase():(b.d[sort.k]==null?-Infinity:b.d[sort.k]);return(x<y?-1:x>y?1:0)*sort.d});
-  var days=Math.round((new Date(B.date)-new Date(A.date))/864e5);
+  var qq=(window._q||'').toLowerCase().trim();var days=Math.round((new Date(B.date)-new Date(A.date))/864e5);
   var stats='<div class="stats"><div class="stat"><b>'+days+' d</b><span>Between snapshots</span></div><div class="stat"><b class="'+(inactN?'inact':'')+'">'+inactN+'</b><span>Inactive ('+esc(am)+' gain &lt; '+fmt(th)+')</span></div><div class="stat"><b>'+data.filter(function(x){return x.isNew}).length+' / '+left.length+'</b><span>Joined / left</span></div>'+cols.slice(0,2).map(function(c){return'<div class="stat"><b class="'+(gain[c]>=0?'up':'dn')+'">'+fd(gain[c])+'</b><span>Alliance '+esc(c)+' change</span></div>'}).join('')+'</div>';
   var head='<th data-s="name">Name</th><th>Status</th>'+cols.map(function(c){return'<th data-s="'+esc(c)+'">Δ '+esc(c)+(sort.k==c?(sort.d<0?' ▾':' ▴'):'')+'</th>'}).join('');
-  var body=data.map(function(x){var st=x.isNew?'<span class="tag up">New</span>':x.inact?'<span class="tag inact">Inactive</span>':'';return'<tr><td>'+esc(x.r.name)+'</td><td>'+st+'</td>'+cols.map(function(c){var v=x.d[c];return'<td class="'+(v>0?'up':v<0?'dn':'')+'">'+(x.isNew?'–':fd(v))+'</td>'}).join('')+'</tr>'}).join('');
+  var body=data.map(function(x){if(qq&&x.r.name.toLowerCase().indexOf(qq)<0&&String(x.r.id).indexOf(qq)<0)return'';var st=x.isNew?'<span class="tag up">New</span>':x.inact?'<span class="tag inact">Inactive</span>':'';return'<tr><td>'+esc(x.r.name)+'</td><td>'+st+'</td>'+cols.map(function(c){var v=x.d[c];return'<td class="'+(v>0?'up':v<0?'dn':'')+'">'+(x.isNew?'–':fd(v))+'</td>'}).join('')+'</tr>'}).join('');
   var lt=left.length?'<div class="card"><h2>Left the alliance</h2><p class="sub">'+left.map(function(r){return esc(r.name)}).join(', ')+'</p></div>':'';
-  return'<div class="row"><div><label>From (older)</label>'+snapSel('ca',ai)+'</div><div><label>To (newer)</label>'+snapSel('cb',bi)+'</div><div><label>Activity measured by</label><select id="am">'+cols.map(function(c){return'<option'+(c==am?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div><div><label>Minimum gain to count as active</label><input type="number" id="th" value="'+th+'" min="0"></div><div class="chk" style="flex:0;white-space:nowrap"><input type="checkbox" id="oi"'+(only?' checked':'')+'><label style="margin:0">Only inactive</label></div></div>'+stats+'<div class="card">'+table(cols,data,head,body)+(data.length?'':'<div class="empty">Nobody matches.</div>')+'</div>'+lt;
+  return'<div class="row"><div><label>From (older)</label>'+snapSel('ca',ai)+'</div><div><label>To (newer)</label>'+snapSel('cb',bi)+'</div><div><label>Activity measured by</label><select id="am">'+cols.map(function(c){return'<option'+(c==am?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></div><div><label>Minimum gain to count as active</label><input type="number" id="th" value="'+th+'" min="0"></div><div><label>Search name or ID</label><input id="q" value="'+esc(window._q||'')+'" placeholder="Name or governor ID"></div><div class="chk" style="flex:0;white-space:nowrap"><input type="checkbox" id="oi"'+(only?' checked':'')+'><label style="margin:0">Only inactive</label></div></div>'+stats+'<div class="card">'+table(cols,data,head,body)+(data.length?'':'<div class="empty">Nobody matches.</div>')+'</div>'+lt;
 }
 function bind(){
   var $=function(i){return document.getElementById(i)};
   document.querySelectorAll('th[data-s]').forEach(function(h){h.onclick=function(){var k=h.getAttribute('data-s');if(k=='rank')return;sort={k:k,d:sort.k==k?-sort.d:(k=='name'?1:-1)};render()}});
   if($('rs'))$('rs').onchange=function(){window._rs=+this.value;sort={k:'',d:-1};render()};
   if($('ca')){$('ca').onchange=function(){window._ca=+this.value;render()};$('cb').onchange=function(){window._cb=+this.value;render()};$('am').onchange=function(){window._am=this.value;sort={k:'',d:-1};render()};$('th').onchange=function(){window._th=Math.max(0,+this.value||0);render()};$('oi').onchange=function(){window._oi=this.checked;render()}}
+  if($('q'))$('q').oninput=function(){window._q=this.value;var p=this.selectionStart;render();var n=document.getElementById('q');if(n){n.focus();try{n.setSelectionRange(p,p)}catch(e){}}};
+  if($('cp'))$('cp').onclick=function(){var t=$('jo');t.select();try{navigator.clipboard.writeText(t.value)}catch(e){document.execCommand('copy')}this.textContent='Copied'};
   if($('fw'))$('fw').onchange=function(){window._fw=Math.min(100,Math.max(0,+this.value||0));render()};
   if($('seed'))$('seed').onclick=function(){
     var n=['Usefulness %','Gifts','Power','Forts destroyed','Tech points','Building time (h)','Alliance helps','Gift score'];
@@ -314,8 +316,16 @@ function bind(){
     }catch(e){msg=e.message}
     render()};
   document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){if(confirm('Delete this snapshot?')){S.snaps.splice(+b.getAttribute('data-del'),1);window._ca=window._cb=window._rs=null;save();render()}}});
-  if($('exp'))$('exp').onclick=function(){var a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({snaps:S.snaps.map(function(s){var c=Object.assign({},s);delete c.shared;delete c._i;return c})}));a.download='data.json';a.click()};
+  if($('exp'))$('exp').onclick=function(){exportJson();return;var a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({snaps:S.snaps.map(function(s){var c=Object.assign({},s);delete c.shared;delete c._i;return c})}));a.download='data.json';a.click()};
   if($('imp'))$('imp').onchange=function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result);if(!o.snaps)throw 0;S=o;save();msg='Backup restored.';render()}catch(e){msg='That file is not a valid backup.';render()}};r.readAsText(f)};
+}
+function exportJson(){
+  var json=JSON.stringify({snaps:S.snaps.map(function(s){var c=Object.assign({},s);delete c.shared;delete c._i;return c})});
+  window._json=json;
+  var fb=function(){try{var a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(json);a.download='data.json';a.click()}catch(e){}};
+  var shown=function(){msg='If no file downloaded, copy the text below and paste it into a new file named data.json.';render()};
+  try{if(window.claude&&claude.use){claude.use('downloads').then(function(d){if(!d){fb();shown();return}return d.save({filename:'data.json',data:json}).then(function(){msg='data.json saved. You can also copy the text below.';render()},function(){shown()})}).catch(function(){fb();shown()});return}}catch(e){}
+  fb();shown();
 }
 function loadShared(){try{fetch('data.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(o){
   if(!o||!o.snaps||!o.snaps.length)return;
