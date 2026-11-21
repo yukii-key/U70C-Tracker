@@ -394,6 +394,13 @@ body.hofdrag::after{content:"📸 Drop to add to the Hall of Fame";position:fixe
 .lgbox input{margin-bottom:8px}.lgbox .keep{display:flex;gap:8px;align-items:center;justify-content:center;font-size:13px;color:var(--mut);margin:2px 0 12px;cursor:pointer}
 .lgbox .msg{min-height:18px;color:var(--bad);font-weight:600}
 .rolabel{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut);margin-top:8px}
+
+/* ---------- member tools ---------- */
+.ln .kr{cursor:pointer}.ln.dropok{outline:2px dashed var(--ac)}.pc{cursor:grab;user-select:none}.pc.sel{background:var(--ac);color:var(--btx);border-color:transparent}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}.cg label{font-size:11px;color:var(--mut);font-weight:700}
+.out{margin-top:12px;padding:12px 14px;border-radius:14px;background:var(--card2);border:1px solid var(--bd);font-size:14px}.out b{color:var(--ac);font-size:20px}
+.cvt td,.cvt th{text-align:left}.cvt td:first-child{white-space:nowrap}
+#scv{width:100%;height:auto;border-radius:14px;display:block;background:#111}
 </style>
 </head>
 <body>
@@ -417,7 +424,7 @@ var CX=new WeakMap();
 /* ---------- leader login (client-side) ---------- */
 var ADMIN_HASH='bf66c33a5cdbf3e6127067f63eae222dc7786047b0784736ca4aa1b7b888e36b';
 var ADMIN_TABS=['leaders','kvk','recruit','data'];
-var WRITE_ACTS={copyKick:1,copyKvk:1,kv:1,resetMsg:1,addTodo:1,delTodo:1,addApp:1,delApp:1,addSnap:1,delSnap:1,exp:1,reset:1,evadd:1,evdel:1,hofdel:1,saveDesc:1,resetDesc:1,addLink:1,delLink:1,avRoll:1,avClear:1,copyMsg:1,banCheck_admin:1};
+var WRITE_ACTS={lnNew:1,lnDel:1,lnPut:1,lnRm:1,copyKick:1,copyKvk:1,kv:1,resetMsg:1,addTodo:1,delTodo:1,addApp:1,delApp:1,addSnap:1,delSnap:1,exp:1,reset:1,evadd:1,evdel:1,hofdel:1,saveDesc:1,resetDesc:1,addLink:1,delLink:1,avRoll:1,avClear:1,copyMsg:1,banCheck_admin:1};
 var ADM=false,AUTHKEY='u70c.admin',FAILS=0,LOCKTO=0;
 function sha256(s){
   function rr(n,x){return(x>>>n)|(x<<(32-n))}
@@ -763,7 +770,7 @@ var BAN_URL='https://kingdom-4170-ban-lookup.vercel.app/',DISCORD_URL='https://d
 var DEFDESC='★MiSFiTS★\n[U70C] United in Chaos\nFamily: [U70L] United in Light\nWe Are 70\nLeads: ᴹᶠDiosa, Infinite Rick\nDiplo: ᴹᶠDiosa\nEnforcers: All R4s\n\nRequirements:\nBe Active\n7mil min. pwr to join\nFarm in Territory';
 var DEFLINKS=[{key:'ban',icon:'🚫',label:'Kingdom Ban List',sub:'Look a governor up before you accept them',url:BAN_URL},{key:'discord',icon:'💬',label:'Kingdom Discord',sub:'Join the Kingdom 4170 community server',url:DISCORD_URL}];
 THEMES.splice(2,0,['banner','Banner','#ef4444','#220c14']);
-var TABS=[['home','🏠','Overview'],['roster','👥','Roster'],['leaders','🛡️','Leaders'],['map','🗺️','Map'],['kvk','⚔️','KvK'],['duel','🥊','Duel'],['trends','📈','Trends'],['hof','🏆','Fame'],['hub','🌐','Hub'],['recruit','📣','Recruit'],['data','⚙️','Data']];
+var TABS=[['home','🏠','Overview'],['roster','👥','Roster'],['leaders','🛡️','Leaders'],['map','🗺️','Map'],['lineup','📋','Lineups'],['kvk','⚔️','KvK'],['duel','🥊','Duel'],['tools','🧰','Tools'],['trends','📈','Trends'],['hof','🏆','Fame'],['hub','🌐','Hub'],['recruit','📣','Recruit'],['data','⚙️','Data']];
 var SIC={'Usefulness %':'🎯','Power':'💪','Forts destroyed':'🏰','Alliance helps':'🤝','Tech points':'🔬','Armory points':'🛠️','Building time (h)':'🏗️','Resource assistance':'📦','Kill points':'💥'};
 var PW={'Usefulness %':.25,'Power':.2,'Forts destroyed':.15,'Alliance helps':.15,'Kill points':.1,'Tech points':.075,'Armory points':.075};
 function linkList(){var b=(S.info&&S.info.links&&S.info.links.length)?S.info.links:DEFLINKS;return b.concat((M&&M.links)||[])}
@@ -830,7 +837,7 @@ function render(){
   buildNav();
   var an=animNext;animNext=false;v.className=an?'anim':'';
   if(tab=='data')v.innerHTML=dataView();else if(!s)v.innerHTML='<div class="card empty">No data yet. Add a snapshot in the Data tab.</div>';
-  else v.innerHTML=({home:homeView,roster:rosterView,leaders:leadersView,kvk:kvkView,map:mapView,duel:duelView,trends:trendsView,hub:hubView,hof:hofView,recruit:recruitView})[tab](s);
+  else v.innerHTML=({home:homeView,roster:rosterView,leaders:leadersView,kvk:kvkView,map:mapView,duel:duelView,trends:trendsView,hub:hubView,hof:hofView,recruit:recruitView,lineup:lineupView,tools:toolsView})[tab](s);
   var i=S.info||{};$('foot').innerHTML=esc(i.name||'Alliance')+' ['+esc(i.tag||'')+'] · Kingdom '+esc(i.kingdom||'')+(s?' · data from '+esc(s.date):'')+'<br><a href="'+esc(linkUrl('ban'))+'" target="_blank" rel="noopener">🚫 Ban list</a> · <a href="'+esc(linkUrl('discord'))+'" target="_blank" rel="noopener">💬 Discord</a><br>Shortcuts: <kbd>/</kbd> search · <kbd>1</kbd>–<kbd>'+visTabs().length+'</kbd> switch tabs · <kbd>Esc</kbd> close · <kbd>←</kbd><kbd>→</kbd> browse profiles'+(ADM?'':'<br><span class="rolabel">👀 View-only mode</span> <button class="btn sm" data-act="login" style="margin-left:6px">🔐 Leader login</button>');
   decorate(an);movePill();
 }
@@ -1061,7 +1068,7 @@ function openMember(id,dir){
   <h3 class="ph">🖼️ Profile picture</h3><div class="picrow">${avEl(r,64)}<div style="flex:1;min-width:200px"><div class="row" style="margin:0 0 8px"><div style="flex:0"><label class="btn sm" style="display:inline-block">📷 Upload photo<input type="file" accept="image/*" data-i="pic" data-nid="${esc(id)}" hidden></label></div><div style="flex:0"><button class="btn sm" data-act="avRoll:${esc(id)}">🎲 New avatar</button></div><div style="flex:0"><button class="btn sm bad" data-act="avClear:${esc(id)}">Reset</button></div></div><input data-nid="${esc(id)}" data-nf="pic" value="${n.pic&&n.pic.indexOf('data:')!=0?esc(n.pic):''}" placeholder="${n.pic&&n.pic.indexOf('data:')==0?'Custom photo uploaded ✓':'…or paste an image link (https://…)'}"></div></div>`;
   var nav=`<div class="pnav"><button data-act="mnav:-1" title="Previous (←)">‹</button><span>${pos+1} / ${L.length}</span><button data-act="mnav:1" title="Next (→)">›</button></div>`;
   var banner=`<div class="pbanner" style="--h:${hue}"><div class="pb-rays"></div><div class="pb-av"><i class="halo"></i>${avEl(r,104,'xl')}</div><div class="pb-info"><h2>${nm(r)} ${am.map(function(a){return'<span title="'+a[2]+'">'+a[1]+'</span>'}).join('')}</h2><div class="pb-badges"><span class="badge r-${rk}">${rl(rk)}</span><span class="tier" style="color:${t[1]}">${t[0]}</span>${n.title?`<span class="tier">🎖️ ${esc(n.title)}</span>`:''}${ADM?(f.k?' '+chipFl(f.k):'')+' '+chipFl(kv.v):''}</div><div class="pb-meta">ID ${esc(id)} · Last login ${esc(String(r.last).replace('T',' '))} UTC</div></div><div class="pb-lvl">${ringSVG(ch/100,'var(--ac2)',cnt(ch,'int'),'CHAOS',96)}<em>${ct[1]} ${ct[0]}</em></div></div>`;
-  var acts=`<div class="pacts"><button class="btn sm" data-act="copyId:${esc(id)}">📋 Copy ID</button><button class="btn sm" data-act="banCheck:${esc(id)}">🚫 Ban list check</button><a class="btn sm" href="${esc(linkUrl('discord'))}" target="_blank" rel="noopener">💬 Discord</a><button class="btn sm" data-act="duelPick:${esc(id)}">🥊 Duel</button><button class="btn sm" data-act="copySummary:${esc(id)}">📝 Copy summary</button></div>`;
+  var acts=`<div class="pacts"><button class="btn sm" data-act="copyId:${esc(id)}">📋 Copy ID</button><button class="btn sm" data-act="banCheck:${esc(id)}">🚫 Ban list check</button><a class="btn sm" href="${esc(linkUrl('discord'))}" target="_blank" rel="noopener">💬 Discord</a><button class="btn sm" data-act="duelPick:${esc(id)}">🥊 Duel</button><button class="btn sm" data-act="copySummary:${esc(id)}">📝 Copy summary</button><button class="btn sm" data-act="card:${esc(id)}">🖼️ Share card</button><button class="btn sm" data-act="plink:${esc(id)}">🔗 Copy link</button></div>`;
   $('modal').innerHTML=`<div class="modal${still?' still':''}" id="mbg"><div class="sheet prof ${still?(dir?(dir>0?'swr':'swl'):''):'fresh'}"><button class="x" data-act="close" aria-label="Close">✕</button>${nav}${banner}${acts}<p class="pins">${insight(r,s)}</p>${tiles}
   <div class="pgrid"><div class="pcard"><h3 class="ph" style="margin-top:0">🕸️ Skill radar <small>vs alliance median (dashed)</small></h3>${radar}</div><div class="pcard"><h3 class="ph" style="margin-top:0">💡 Strengths &amp; watch-outs</h3><div class="chips" style="margin:0">${chips}</div>${ab?`<h3 class="ph">🪪 About</h3><div class="kgrid">${ab}</div>`:''}</div></div>
   <h3 class="ph">📊 Stat breakdown <small>bar = share of the alliance’s best · tick = alliance average</small></h3>${rows}<h3 class="ph">⚖️ Efficiency <small>output relative to power</small></h3><div class="kgrid">${eff}</div>
@@ -1098,9 +1105,115 @@ function act2(k,v,b,p,s){
    case'avClear':setNote(v,{avs:0,pic:''});render();openMember(v);return true;
    case'copySummary':var r=pickRow(s,v);if(r)copyText(memberSummary(r,s),'Profile summary copied ✓');return true;
   }return false}
+
+/* =====================================================================
+   MEMBER TOOLS – profile links · share card · lineups · calculators · time converter
+   ===================================================================== */
+var FONT='system-ui,"Segoe UI",Roboto,"Noto Sans",sans-serif',MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+/* ---- direct profile links ---- */
+function profLink(id){return location.href.split('#')[0]+'#member-'+id}
+var _om=openMember;openMember=function(id,dir){_om(id,dir);try{history.replaceState(null,'','#member-'+id)}catch(e){}};
+var _cm0=closeM;closeM=function(){_cm0();try{if(/^#member-/.test(location.hash))history.replaceState(null,'',location.pathname+location.search)}catch(e){}};
+function openHash(){var m=/^#member-(\d+)$/.exec(location.hash);if(!m||booting||!cur())return;if(ROW[m[1]])_om(m[1]);else toast('That member is not in the latest data')}
+addEventListener('hashchange',openHash);
+/* ---- share card ---- */
+function imgLoad(src){return new Promise(function(res){var i=new Image();i.onload=function(){res(i)};i.onerror=function(){res(null)};i.src=src})}
+function rrect(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
+function fit(x,tx,w,sz,wt){var s=sz;do{x.font=wt+' '+s+'px '+FONT;s-=2}while(x.measureText(tx).width>w&&s>20)}
+function shareCard(id){var r=ROW[id];if(!r)return;
+  $('modal').innerHTML='<div class="modal" id="mbg"><div class="sheet" style="max-width:880px"><button class="x" data-act="close" aria-label="Close">✕</button><h2 style="margin:0 40px 10px 0">🖼️ Share card</h2><canvas id="scv" width="1200" height="630"></canvas><div class="row"><div style="flex:0"><button class="btn pri" data-act="cardDl:'+esc(id)+'">⬇ Download PNG</button></div><div style="flex:0"><button class="btn" data-act="cardCp">📋 Copy image</button></div><div style="flex:0"><button class="btn" data-act="plink:'+esc(id)+'">🔗 Copy link</button></div></div><p class="mut" style="font-size:12px;margin:0">Post it in Discord or in-game chat. Stats are from the latest snapshot.</p></div></div>';
+  var s=cur(),c=$('scv'),x=c.getContext('2d'),W=1200,H=630,n=nt(id),rk=RK(r),h=H32(id+'bg')%360,ch=pcx(s).ch[id],ct=ctitle(ch),i=S.info||{},u=r.m['Usefulness %']||0;
+  var g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'hsl('+h+',55%,26%)');g.addColorStop(1,'hsl('+((h+50)%360)+',55%,9%)');x.fillStyle=g;x.fillRect(0,0,W,H);
+  var rg=x.createRadialGradient(200,290,20,200,290,560);rg.addColorStop(0,'rgba(255,255,255,.2)');rg.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=rg;x.fillRect(0,0,W,H);
+  var pic=n.pic&&n.pic.indexOf('data:')==0?n.pic:'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(avSVG(id,rk,n.avs||0));
+  Promise.all([imgLoad(pic),imgLoad(LOGO)]).then(function(im){var cx=200,cy=270,R=125;
+    var bg=x.createRadialGradient(cx-40,cy-60,10,cx,cy,R);bg.addColorStop(0,'hsl('+h+',72%,64%)');bg.addColorStop(1,'hsl('+((h+40)%360)+',62%,30%)');
+    x.save();x.beginPath();x.arc(cx,cy,R,0,6.283);x.clip();x.fillStyle=bg;x.fillRect(cx-R,cy-R,2*R,2*R);if(im[0])x.drawImage(im[0],cx-R,cy-R,2*R,2*R);x.restore();
+    x.lineWidth=9;x.strokeStyle=RKC[rk]||'#fff';x.beginPath();x.arc(cx,cy,R+4,0,6.283);x.stroke();
+    x.fillStyle='#fff';x.textBaseline='alphabetic';fit(x,r.name,520,58,'800');x.fillText(r.name,370,130);
+    var pl=rl(rk)+' · '+RN[rk].split(' · ')[1];x.font='700 24px '+FONT;var pw=x.measureText(pl).width+36;rrect(x,370,160,pw,42,21);x.fillStyle=RKC[rk]||'#64748b';x.fill();x.fillStyle='#fff';x.fillText(pl,388,190);
+    x.fillStyle='rgba(255,255,255,.7)';x.font='600 22px '+FONT;x.fillText('ID '+id+'  ·  '+tier(u)[0],370+pw+16,190);
+    /* chaos ring */
+    var rx=1060,ry=120;x.lineWidth=12;x.strokeStyle='rgba(255,255,255,.18)';x.beginPath();x.arc(rx,ry,68,0,6.283);x.stroke();x.strokeStyle='#fcd34d';x.lineCap='round';x.beginPath();x.arc(rx,ry,68,-1.5708,-1.5708+6.283*ch/100);x.stroke();
+    x.fillStyle='#fff';x.textAlign='center';x.font='800 50px '+FONT;x.fillText(ch,rx,ry+14);x.font='700 15px '+FONT;x.fillStyle='rgba(255,255,255,.75)';x.fillText('CHAOS · '+ct[0].toUpperCase(),rx,ry+100);x.textAlign='left';
+    var ST=[['Power','POWER'],['Usefulness %','USEFULNESS'],['Forts destroyed','FORTS'],['Alliance helps','HELPS'],['Kill points','KILL POINTS'],['Tech points','TECH']];
+    ST.forEach(function(k,j){var bx=370+(j%3)*270,by=240+Math.floor(j/3)*135;rrect(x,bx,by,250,118,18);x.fillStyle='rgba(0,0,0,.3)';x.fill();
+      x.fillStyle='rgba(255,255,255,.65)';x.font='700 18px '+FONT;x.fillText(k[1],bx+18,by+32);x.fillStyle='#fff';x.font='800 44px '+FONT;x.fillText(statFmt(k[0],r.m[k[0]]||0),bx+18,by+78);
+      x.fillStyle='#fcd34d';x.font='700 17px '+FONT;x.fillText((r.m[k[0]]||0)>0?'Top '+topPct(s,r,k[0])+'%  ·  #'+rankPos(s,r,k[0]):'–',bx+18,by+104)});
+    if(im[1]){var lh=76,lw=lh*im[1].width/im[1].height;x.drawImage(im[1],40,H-lh-26,lw,lh);x.fillStyle='#fff';x.font='800 28px '+FONT;x.fillText((i.name||'')+' ['+(i.tag||'')+']',40+lw+16,H-60);x.fillStyle='rgba(255,255,255,.7)';x.font='600 20px '+FONT;x.fillText('Kingdom '+(i.kingdom||'')+' · '+(i.motto||'We Are 70'),40+lw+16,H-30)}
+    x.textAlign='right';x.fillStyle='rgba(255,255,255,.55)';x.font='600 18px '+FONT;x.fillText('Data from '+s.date,W-40,H-30);x.textAlign='left'})}
+/* ---- team lineups ---- */
+function lnList(){return M.lineups||(M.lineups=[])}
+function lnNow(r){var k=regOf(r.id);return k?REG[k].e+' '+REG[k].n+' · '+localAt(REG[k].u):'no region'}
+function lnTeam(tm,i){var rows=tm.m.map(function(id){return ROW[id]}).filter(Boolean).sort(function(a,b){return(b.m['Power']||0)-(a.m['Power']||0)}),tp=rows.reduce(function(a,r){return a+(r.m['Power']||0)},0);
+  return'<div class="card ln" data-drop="'+i+'">'+(ADM?'<input data-tix="'+i+'" value="'+esc(tm.n)+'" style="font-weight:800;margin-bottom:6px" placeholder="Team name">':'<h2>'+esc(tm.n)+'</h2>')+
+  '<div class="chips" style="margin:0 0 8px"><span class="chip">👥 '+rows.length+'</span><span class="chip">💪 '+sh(tp)+'</span>'+(rows.length?'<span class="chip">Ø '+sh(tp/rows.length)+'</span>':'')+'</div>'+
+  (rows.length?rows.map(function(r){return'<div class="kr" data-id="'+esc(r.id)+'"'+(ADM?' draggable="true" data-drag="'+esc(r.id)+'|'+i+'"':'')+'><div class="nm"><b>'+nm(r)+'</b><small>'+rl(RK(r))+' · '+sh(r.m['Power'])+' power · '+lnNow(r)+'</small></div>'+(ADM?'<button class="btn sm bad" data-act="lnRm:'+i+':'+esc(r.id)+'" title="Remove">✕</button>':'')+'</div>'}).join(''):'<div class="empty" style="padding:14px">'+(ADM?'Drag members here, or pick one in the pool and press ＋.':'Nobody assigned yet.')+'</div>')+
+  '<div class="row" style="margin:10px 0 0"><div style="flex:0"><button class="btn sm" data-act="lnCopy:'+i+'">📋 Copy for Discord</button></div>'+(ADM?'<div style="flex:0"><button class="btn sm ok" data-act="lnPut:'+i+'">＋ Add selected</button></div><div style="flex:0"><button class="btn sm bad" data-act="lnDel:'+i+'">Delete team</button></div>':'')+'</div></div>'}
+function lnPool(){var q=(window._lnq||'').toLowerCase().trim(),used={};lnList().forEach(function(t){t.m.forEach(function(id){used[id]=(used[id]||0)+1})});
+  var a=cur().rows.filter(function(r){return!q||r.name.toLowerCase().indexOf(q)>=0||String(r.id).indexOf(q)>=0}).sort(function(x,y){return(y.m['Power']||0)-(x.m['Power']||0)}).slice(0,60);
+  return a.map(function(r){return'<span class="chip pc'+(window._lnSel==r.id?' sel':'')+'" draggable="true" data-drag="'+esc(r.id)+'|-" data-act="lnPick:'+esc(r.id)+'">'+nm(r)+' · '+sh(r.m['Power'])+(used[r.id]?' ✓'+used[r.id]:'')+'</span>'}).join(' ')||'<span class="mut">No match</span>'}
+function lnPoolRender(){var e=$('lnPool');if(e)e.innerHTML=lnPool()}
+function lineupView(s){var L=lnList();
+  return'<div class="card pagehead"><h2 style="margin:0">📋 Team lineups <small>Ark of Osiris, fort rallies and more · '+(ADM?'drag members into teams':'tap a member to open their profile')+'</small></h2></div>'+
+  (ADM?'<div class="card"><h2>➕ New team</h2><div class="row"><div style="flex:3"><input id="lnName" placeholder="e.g. Ark of Osiris – Team 1"></div><div style="flex:0"><button class="btn pri" data-act="lnNew">Create</button></div></div><h2 style="margin-top:14px">👥 Member pool <small>drag onto a team · or tap one, then press ＋ on a team</small></h2><input data-i="lnq" placeholder="Search name or ID" value="'+esc(window._lnq||'')+'"><div id="lnPool" style="margin-top:10px;line-height:2.1">'+lnPool()+'</div></div>':'')+
+  (L.length?'<div class="grid3">'+L.map(lnTeam).join('')+'</div>':'<div class="card empty">'+(ADM?'No teams yet — create the first one above.':'No lineups published yet — check back soon!')+'</div>')+
+  (ADM?'<p class="mut" style="font-size:12px">Saved in this browser · Export data.json in the Data tab to publish for everyone.</p>':'')}
+function lnMove(id,dest,from){if(!ADM||!ROW[id])return;var L=lnList(),d=L[+dest];if(!d)return;if(d.m.indexOf(id)<0)d.m.push(id);if(from!=='-'&&from!=null&&from!==String(dest)&&L[+from])L[+from].m=L[+from].m.filter(function(x){return x!=id});touch();render()}
+document.addEventListener('dragstart',function(e){var d=e.target.closest&&e.target.closest('[data-drag]');if(!d||!ADM)return;e.dataTransfer.setData('text/plain','u70:'+d.getAttribute('data-drag'));e.dataTransfer.effectAllowed='move'});
+document.addEventListener('dragover',function(e){var z=ADM&&e.target.closest&&e.target.closest('[data-drop]');if(z){e.preventDefault();z.classList.add('dropok')}});
+document.addEventListener('dragleave',function(e){var z=e.target.closest&&e.target.closest('[data-drop]');if(z)z.classList.remove('dropok')});
+document.addEventListener('drop',function(e){var z=ADM&&e.target.closest&&e.target.closest('[data-drop]');if(!z)return;z.classList.remove('dropok');var x=e.dataTransfer.getData('text/plain')||'';if(x.indexOf('u70:')!=0)return;e.preventDefault();var p=x.slice(4).split('|');lnMove(p[0],z.getAttribute('data-drop'),p[1])});
+document.addEventListener('input',function(e){var t=e.target,g=function(a){return t.getAttribute&&t.getAttribute(a)};
+  if(g('data-i')=='lnq'){window._lnq=t.value;lnPoolRender()}
+  else if(g('data-tix')!=null&&ADM){var tm=lnList()[+g('data-tix')];if(tm){tm.n=t.value;touch()}}
+  else if(t.closest&&t.closest('[data-calc]'))calcAll();
+  else if(g('data-cv'))cvChange(g('data-cv'),t.value)});
+document.addEventListener('change',function(e){var t=e.target;if(t.getAttribute&&t.getAttribute('data-cv'))cvChange(t.getAttribute('data-cv'),t.value)});
+/* ---- calculators ---- */
+var SPD=[['1 min',1],['5 min',5],['15 min',15],['1 hour',60],['3 hours',180],['8 hours',480],['15 hours',900],['24 hours',1440],['3 days',4320],['7 days',10080],['30 days',43200]],KPT=[['T1',1],['T2',2],['T3',4],['T4',10],['T5',20]];
+function gv(id){var e=$(id),v=e?num(e.value):0;return v==null||isNaN(v)?0:v}
+function dur(m){var neg=m<0;m=Math.abs(Math.round(m));var d=Math.floor(m/1440),h=Math.floor(m%1440/60);return(neg?'-':'')+(d?d+'d ':'')+h+'h '+(m%60)+'m'}
+function cin(id,lab,ph){return'<div><label>'+lab+'</label><input id="'+id+'" inputmode="decimal" placeholder="'+(ph||'0')+'"></div>'}
+function calcAll(){if(!$('spOut'))return;var tot=0,need=gv('nD')*1440+gv('nH')*60+gv('nM');SPD.forEach(function(x,k){tot+=gv('sp'+k)*x[1]});
+  $('spOut').innerHTML='<b>'+dur(tot)+'</b> in total · '+(tot/1440).toFixed(1)+' days'+(need?'<br>'+(tot>=need?'✅ Enough – <b>'+dur(tot-need)+'</b> to spare':'❌ Short by <b>'+dur(need-tot)+'</b>'):'');
+  var q=gv('trN'),tm=gv('trT'),b=gv('trB'),sec=tm?q*tm/(1+b/100):0,c=[['trF','🌾 Food'],['trW','🪵 Wood'],['trS','🪨 Stone'],['trG','🪙 Gold']].map(function(r){return gv(r[0])?r[1]+' <b>'+sh(q*gv(r[0]))+'</b>':''}).filter(Boolean).join(' · ');
+  $('trOut').innerHTML=q?(c||'Enter cost per troop')+(sec?'<br>⏱️ Training time <b>'+dur(sec/60)+'</b>':''):'Enter how many troops you want to train.';
+  var kp=0,kk=0;KPT.forEach(function(x,k){kp+=gv('kp'+k)*x[1];kk+=gv('kp'+k)});var tg=gv('kpT');
+  $('kpOut').innerHTML=kk?'<b>'+fmt(kp)+'</b> kill points from '+fmt(kk)+' kills'+(tg?'<br>'+(kp>=tg?'✅ Target reached':'Need <b>'+fmt(tg-kp)+'</b> more = '+fmt(Math.ceil((tg-kp)/20))+' T5 kills or '+fmt(Math.ceil((tg-kp)/10))+' T4 kills'):''):'Enter kills per tier.'}
+/* ---- event time converter ---- */
+function cvEvents(){return evAll().filter(function(e){return e.h&&evUp(e)}).sort(function(a,b){return evTime(a)-evTime(b)}).slice(0,15)}
+function cvInit(){if(window._cv)return;var e=cvEvents()[0],n=new Date();window._cv=e?{d:e.d,h:e.h,t:e.t}:{d:n.getUTCFullYear()+'-'+p2(n.getUTCMonth()+1)+'-'+p2(n.getUTCDate()),h:'12:00',t:''}}
+function cvChange(k,v){cvInit();var cv=window._cv;if(k=='ev'){var e=cvEvents()[+v];if(e){cv.d=e.d;cv.h=e.h;cv.t=e.t}else cv.t='';var d=$('cvD'),h=$('cvH');if(d)d.value=cv.d;if(h)h.value=cv.h}else{cv[k]=v;cv.t=''}var o=$('cvOut');if(o)o.innerHTML=convOut()}
+function convOut(){cvInit();var cv=window._cv,p=(cv.d||'').split('-'),q=(cv.h||'').split(':');if(p.length<3||q.length<2||!q[0])return'<div class="empty">Pick a date and a time (UTC).</div>';
+  var base=Date.UTC(+p[0],+p[1]-1,+p[2],+q[0],+q[1]),s=cur(),cn={},rg=0,aw=0;if(s)s.rows.forEach(function(r){var k=regOf(r.id);if(k){cn[k]=(cn[k]||0)+1;rg++}});
+  var tx=['⏰ '+(cv.t||'Event')+' — '+cv.d+' '+cv.h+' UTC'],rows=RORD.map(function(k){var R=REG[k],d=new Date(base+R.u*36e5),hh=d.getUTCHours(),ok=hh>=8&&hh<23,when=DOW[d.getUTCDay()]+' '+p2(d.getUTCDate())+' '+MON[d.getUTCMonth()]+' · '+p2(hh)+':'+p2(d.getUTCMinutes());if(ok)aw+=cn[k]||0;tx.push(R.e+' '+R.n+' ('+utcTxt(R.u)+'): '+when);
+    return'<tr><td><span class="rgc" style="--rc:'+R.c+'">'+R.e+' '+R.n+'</span></td><td>'+utcTxt(R.u)+'</td><td><b>'+when+'</b></td><td>'+(ok?'🟢 awake':'🌙 night')+'</td><td>'+(cn[k]||0)+'</td></tr>'}).join('');
+  var me=new Date(base);tx.push('Your local time differs – check the converter on our site.');window._cvTxt=tx.join('\n');
+  return'<div class="tw"><table class="cvt"><thead><tr><th>Region</th><th>Offset</th><th>Local time there</th><th>Likely</th><th>Members</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="out">🕒 <b>'+me.toLocaleString([],{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</b> your local time'+(rg?'<br>🟢 About <b>'+aw+'</b> of <b>'+rg+'</b> members (with a region set) are likely awake (08:00–23:00).':'')+'</div><p class="mut" style="font-size:12px;margin:8px 0 0">Region times use one fixed offset each, so daylight saving can shift them by an hour.</p>'}
+function toolsView(){cvInit();var cv=window._cv,ev=cvEvents();
+  var sp='<div class="card" data-calc><h2>⏩ Speedup calculator <small>how many speedups do you have?</small></h2><div class="cg">'+SPD.map(function(x,k){return cin('sp'+k,x[0])}).join('')+'</div><div class="cg" style="margin-top:10px">'+cin('nD','Needed · days')+cin('nH','hours')+cin('nM','minutes')+'</div><div class="out" id="spOut"></div></div>';
+  var tr='<div class="card" data-calc><h2>🛡️ Training cost &amp; time <small>enter the values shown in your game</small></h2><div class="cg">'+cin('trN','Troops to train','e.g. 100k')+cin('trF','Food / troop')+cin('trW','Wood / troop')+cin('trS','Stone / troop')+cin('trG','Gold / troop')+cin('trT','Seconds / troop')+cin('trB','Training speed %')+'</div><div class="out" id="trOut"></div></div>';
+  var kp='<div class="card" data-calc><h2>💥 KvK kill points <small>T1 = 1 · T2 = 2 · T3 = 4 · T4 = 10 · T5 = 20 per kill</small></h2><div class="cg">'+KPT.map(function(x,k){return cin('kp'+k,x[0]+' kills')}).join('')+cin('kpT','Target points','e.g. 5m')+'</div><div class="out" id="kpOut"></div></div>';
+  var cvt='<div class="card"><h2>🌍 Event time converter <small>see an event\'s start time in every region</small></h2><div class="row"><div style="flex:2"><label class="lbl">Upcoming event</label><select data-cv="ev"><option value="">Custom time…</option>'+ev.map(function(e,k){return'<option value="'+k+'"'+(e.t==cv.t&&e.d==cv.d?' selected':'')+'>'+esc(e.t)+' · '+e.d+' '+e.h+'</option>'}).join('')+'</select></div><div><label class="lbl">Date</label><input id="cvD" type="date" data-cv="d" value="'+esc(cv.d)+'"></div><div><label class="lbl">Time (UTC)</label><input id="cvH" type="time" data-cv="h" value="'+esc(cv.h)+'"></div></div><div id="cvOut">'+convOut()+'</div><div class="row" style="margin:10px 0 0"><div style="flex:0"><button class="btn" data-act="cvCopy">📋 Copy for Discord</button></div></div></div>';
+  setTimeout(calcAll,0);return'<div class="card pagehead"><h2 style="margin:0">🧰 Member tools <small>calculators and time zones</small></h2></div>'+cvt+'<div class="grid3">'+sp+tr+kp+'</div>'}
+/* ---- actions ---- */
+var _act4=act2;act2=function(k,v,b,p,s){switch(k){
+  case'card':shareCard(v);return true;
+  case'plink':copyText(profLink(v),'Profile link copied ✓');return true;
+  case'cardDl':var a=document.createElement('a');a.href=$('scv').toDataURL('image/png');a.download='u70c-'+v+'.png';document.body.appendChild(a);a.click();a.remove();return true;
+  case'cardCp':$('scv').toBlob(function(bl){try{navigator.clipboard.write([new ClipboardItem({'image/png':bl})]).then(function(){toast('Image copied ✓')},function(){toast('Copy blocked – use Download')})}catch(e){toast('Copy not supported here – use Download')}});return true;
+  case'lnNew':var nn=($('lnName').value||'').trim();if(!nn){toast('Give the team a name');return true}lnList().push({n:nn,m:[]});touch();render();return true;
+  case'lnDel':if(confirm('Delete this team?')){lnList().splice(+v,1);touch();render()}return true;
+  case'lnPick':window._lnSel=window._lnSel==v?null:v;lnPoolRender();return true;
+  case'lnPut':if(!window._lnSel){toast('Tap a member in the pool first');return true}lnMove(window._lnSel,v,'-');return true;
+  case'lnRm':var tm=lnList()[+v];if(tm){tm.m=tm.m.filter(function(x){return x!=p[2]});touch();render()}return true;
+  case'lnCopy':var T=lnList()[+v];if(T){var rs=T.m.map(function(id){return ROW[id]}).filter(Boolean).sort(function(a,b){return(b.m['Power']||0)-(a.m['Power']||0)});copyText('📋 '+T.n+' ('+rs.length+' players)\n'+rs.map(function(r,i){return(i+1)+'. '+r.name+' – '+rl(RK(r))+' – '+sh(r.m['Power'])+' – '+lnNow(r)}).join('\n'),'Lineup copied ✓')}return true;
+  case'cvCopy':copyText(window._cvTxt||'','Times copied ✓');return true}
+  return _act4.apply(this,arguments)};
 /* ---------- loading ---------- */
 function hideSplash(){var e=$('splash');if(!e)return;e.classList.add('out');setTimeout(function(){e.remove()},900)}
-function loadShared(){var fired=false,done=function(){if(fired||!booting)return;fired=true;var w=Math.max(0,1100-(Date.now()-T0));setTimeout(function(){booting=false;M=buildMeta();animNext=true;render();hideSplash()},w)};
+function loadShared(){var fired=false,done=function(){if(fired||!booting)return;fired=true;var w=Math.max(0,1100-(Date.now()-T0));setTimeout(function(){booting=false;M=buildMeta();animNext=true;render();hideSplash();openHash()},w)};
   try{fetch('data.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(o){if(o&&o.snaps&&o.snaps.length)S={info:Object.assign({},S.info,o.info||{}),snaps:o.snaps,meta:o.meta||null};done()}).catch(done)}catch(e){done()}setTimeout(done,3500)}
 /* ---------- listeners ---------- */
 var GL='.card,.mc,.stat,.aw,.kc,.k,.lk,.pcol,.spot',FXP=0,KON=[38,38,40,40,37,39,37,39,66,65],KI=0,LC=0,LCT=0;
